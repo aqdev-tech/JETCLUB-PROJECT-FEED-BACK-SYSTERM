@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Feedback System</title>
+    <!-- Tailwind CSS with DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary: #dc2626;
+            --secondary: #2563eb;
+            --dark: #0f172a;
+        }
+        body {
+            background-color: var(--dark);
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-primary:hover {
+            background-color: #b91c1c;
+            border-color: #b91c1c;
+        }
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+        }
+        .btn-secondary:hover {
+            background-color: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+        .text-primary {
+            color: var(--primary);
+        }
+        .text-secondary {
+            color: var(--secondary);
+        }
+        .border-primary {
+            border-color: var(--primary);
+        }
+        .bg-dark {
+            background-color: var(--dark);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-dark text-white">
+    <!-- Navigation -->
+    <nav class="navbar bg-base-100 border-b border-primary">
+        <div class="flex-1">
+            <a href="#" class="btn btn-ghost normal-case text-xl text-primary">
+                <i class="fas fa-comment-dots mr-2"></i>AnonFeedback
+            </a>
+        </div>
+        <div class="flex-none">
+            <button id="loginBtn" class="btn btn-primary mr-2">
+                <i class="fas fa-sign-in-alt mr-2"></i>Admin Login
+            </button>
+            <button id="feedbackBtn" class="btn btn-secondary">
+                <i class="fas fa-plus mr-2"></i>Submit Feedback
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <div class="hero bg-base-200 rounded-lg mb-8">
+            <div class="hero-content text-center">
+                <div class="max-w-md">
+                    <h1 class="text-5xl font-bold text-primary">Anonymous Feedback</h1>
+                    <p class="py-6">Share your thoughts anonymously. Your feedback helps us improve!</p>
+                    <button id="getStartedBtn" class="btn btn-primary">Get Started</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Form (Hidden by default) -->
+        <div id="feedbackFormContainer" class="hidden">
+            <div class="card bg-base-200 shadow-xl mb-8">
+                <div class="card-body">
+                    <h2 class="card-title text-primary">
+                        <i class="fas fa-comment-medical mr-2"></i>Submit Feedback
+                    </h2>
+                    <form id="feedbackForm">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-white">Category</span>
+                            </label>
+                            <select id="category" class="select select-bordered" required>
+                                <option value="" disabled selected>Select a category</option>
+                                <option value="General">General</option>
+                                <option value="Bug">Bug Report</option>
+                                <option value="Feature">Feature Request</option>
+                                <option value="Complaint">Complaint</option>
+                                <option value="Suggestion">Suggestion</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-white">Your Feedback</span>
+                            </label>
+                            <textarea id="message" class="textarea textarea-bordered h-24" placeholder="Type your feedback here..." required></textarea>
+                        </div>
+                        <div class="form-control mt-6">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Login Modal -->
+        <dialog id="loginModal" class="modal">
+            <div class="modal-box bg-base-200">
+                <h3 class="font-bold text-lg text-primary">
+                    <i class="fas fa-lock mr-2"></i>Admin Login
+                </h3>
+                <form id="loginForm" class="py-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text text-white">Username</span>
+                        </label>
+                        <input id="username" type="text" placeholder="Enter admin username" class="input input-bordered" required />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text text-white">Password</span>
+                        </label>
+                        <input id="password" type="password" placeholder="Enter password" class="input input-bordered" required />
+                    </div>
+                    <div class="form-control mt-6">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Close</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Admin Dashboard (Hidden by default) -->
+        <div id="adminDashboard" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-primary">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Admin Dashboard
+                </h2>
+                <button id="logoutBtn" class="btn btn-error">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+
+            <!-- Feedback Filters -->
+            <div class="card bg-base-200 mb-6">
+                <div class="card-body">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-white">Filter by Category</span>
+                            </label>
+                            <select id="filterCategory" class="select select-bordered">
+                                <option value="">All Categories</option>
+                                <option value="General">General</option>
+                                <option value="Bug">Bug Report</option>
+                                <option value="Feature">Feature Request</option>
+                                <option value="Complaint">Complaint</option>
+                                <option value="Suggestion">Suggestion</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-white">Filter by Status</span>
+                            </label>
+                            <select id="filterStatus" class="select select-bordered">
+                                <option value="">All Statuses</option>
+                                <option value="unread">Unread</option>
+                                <option value="read">Read</option>
+                                <option value="important">Important</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                        <button id="applyFiltersBtn" class="btn btn-primary mt-6">
+                            <i class="fas fa-filter mr-2"></i>Apply Filters
+                        </button>
+                        <button id="resetFiltersBtn" class="btn btn-secondary mt-6">
+                            <i class="fas fa-undo mr-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback List -->
+            <div class="card bg-base-200">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-4">
+                        <i class="fas fa-comments mr-2"></i>Feedback List
+                    </h3>
+                    <div id="feedbackList" class="space-y-4">
+                        <!-- Feedback items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Toast -->
+        <div id="toast" class="toast toast-top toast-center hidden">
+            <div class="alert alert-success" id="toastContent">
+                <span id="toastMessage">Feedback submitted successfully!</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Base URL for API
+        const BASE_URL = 'http://localhost:8000'; // Update this if your backend is hosted elsewhere
+        
+        // DOM Elements
+        const feedbackBtn = document.getElementById('feedbackBtn');
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        const feedbackFormContainer = document.getElementById('feedbackFormContainer');
+        const feedbackForm = document.getElementById('feedbackForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginModal = document.getElementById('loginModal');
+        const loginForm = document.getElementById('loginForm');
+        const adminDashboard = document.getElementById('adminDashboard');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const filterCategory = document.getElementById('filterCategory');
+        const filterStatus = document.getElementById('filterStatus');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        const feedbackList = document.getElementById('feedbackList');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastContent = document.getElementById('toastContent');
+
+        // JWT Token
+        let authToken = localStorage.getItem('authToken');
+
+        // Check if user is logged in
+        if (authToken) {
+            showAdminDashboard();
+        }
+
+        // Event Listeners
+        feedbackBtn.addEventListener('click', () => {
+            feedbackFormContainer.classList.remove('hidden');
+            window.scrollTo({
+                top: feedbackFormContainer.offsetTop,
+                behavior: 'smooth'
+            });
+        });
+
+        getStartedBtn.addEventListener('click', () => {
+            feedbackFormContainer.classList.remove('hidden');
+            window.scrollTo({
+                top: feedbackFormContainer.offsetTop,
+                behavior: 'smooth'
+            });
+        });
+
+        loginBtn.addEventListener('click', () => {
+            loginModal.showModal();
+        });
+
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const category = document.getElementById('category').value;
+            const message = document.getElementById('message').value;
+            
+            try {
+                const response = await fetch(`${BASE_URL}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        category,
+                        message
+                    })
+                });
+                
+                if (response.ok) {
+                    showToast('Feedback submitted successfully!', 'success');
+                    feedbackForm.reset();
+                    feedbackFormContainer.classList.add('hidden');
+                    
+                    // If admin is logged in, refresh the feedback list
+                    if (authToken) {
+                        loadFeedbacks();
+                    }
+                } else {
+                    const error = await response.json();
+                    showToast(error.detail || 'Failed to submit feedback', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Prepare form data as x-www-form-urlencoded
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('grant_type', 'password');
+
+            try {
+                const response = await fetch(`${BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    localStorage.setItem('authToken', authToken);
+                    loginModal.close();
+                    loginForm.reset();
+                    showAdminDashboard();
+                    loadFeedbacks();
+                    showToast('Login successful!', 'success');
+                } else {
+                    const error = await response.json();
+                    showToast(error.detail || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            adminDashboard.classList.add('hidden');
+            showToast('Logged out successfully', 'success');
+        });
+
+        applyFiltersBtn.addEventListener('click', () => {
+            loadFeedbacks();
+        });
+
+        resetFiltersBtn.addEventListener('click', () => {
+            filterCategory.value = '';
+            filterStatus.value = '';
+            loadFeedbacks();
+        });
+
+        // Functions
+        function showAdminDashboard() {
+            adminDashboard.classList.remove('hidden');
+            loadFeedbacks();
+        }
+
+        async function loadFeedbacks() {
+            const category = filterCategory.value;
+            const status = filterStatus.value;
+            
+            let url = `${BASE_URL}/admin/feedbacks`;
+            const params = new URLSearchParams();
+            
+            if (category) params.append('category', category);
+            if (status) params.append('status', status);
+            
+            if (params.toString()) {
+                url += `?${params.toString()}`;
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const feedbacks = await response.json();
+                    renderFeedbacks(feedbacks);
+                } else if (response.status === 401) {
+                    // Token expired or invalid
+                    authToken = null;
+                    localStorage.removeItem('authToken');
+                    adminDashboard.classList.add('hidden');
+                    showToast('Session expired. Please login again.', 'error');
+                } else {
+                    const error = await response.json();
+                    showToast(error.detail || 'Failed to load feedbacks', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        function renderFeedbacks(feedbacks) {
+            feedbackList.innerHTML = '';
+            
+            if (feedbacks.length === 0) {
+                feedbackList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        No feedbacks found matching your criteria.
+                    </div>
+                `;
+                return;
+            }
+            
+            feedbacks.forEach(feedback => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'card bg-base-300';
+                
+                // Determine badge color based on status
+                let badgeClass = 'badge-primary';
+                if (feedback.status === 'important') badgeClass = 'badge-error';
+                if (feedback.status === 'resolved') badgeClass = 'badge-success';
+                if (feedback.status === 'read') badgeClass = 'badge-secondary';
+                
+                feedbackItem.innerHTML = `
+                    <div class="card-body">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="card-title">${feedback.category}</h4>
+                                <div class="badge ${badgeClass} gap-2">
+                                    ${feedback.status}
+                                </div>
+                                <p class="mt-2">${feedback.sanitized_message}</p>
+                                <p class="text-sm opacity-70 mt-2">
+                                    <i class="far fa-clock mr-1"></i>
+                                    ${new Date(feedback.created_at).toLocaleString()}
+                                </p>
+                            </div>
+                            <div class="dropdown dropdown-end">
+                                <button tabindex="0" class="btn btn-sm btn-ghost">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                    <li><a data-action="mark-read" data-id="${feedback.id}"><i class="fas fa-envelope-open-text mr-2"></i>Mark as Read</a></li>
+                                    <li><a data-action="mark-important" data-id="${feedback.id}"><i class="fas fa-exclamation-circle mr-2"></i>Mark as Important</a></li>
+                                    <li><a data-action="mark-resolved" data-id="${feedback.id}"><i class="fas fa-check-circle mr-2"></i>Mark as Resolved</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                feedbackList.appendChild(feedbackItem);
+            });
+            
+            // Add event listeners to dropdown actions
+            document.querySelectorAll('[data-action]').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const action = e.currentTarget.getAttribute('data-action');
+                    const feedbackId = e.currentTarget.getAttribute('data-id');
+                    let status = '';
+                    
+                    if (action === 'mark-read') status = 'read';
+                    if (action === 'mark-important') status = 'important';
+                    if (action === 'mark-resolved') status = 'resolved';
+                    
+                    try {
+                        const response = await fetch(`${BASE_URL}/admin/feedbacks/${feedbackId}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authToken}`
+                            },
+                            body: JSON.stringify({
+                                status
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            loadFeedbacks();
+                            showToast(`Feedback marked as ${status}`, 'success');
+                        } else {
+                            const error = await response.json();
+                            showToast(error.detail || 'Failed to update feedback', 'error');
+                        }
+                    } catch (error) {
+                        showToast('Network error. Please try again.', 'error');
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            toastMessage.textContent = message;
+            
+            // Set alert class based on type
+            toastContent.className = 'alert';
+            if (type === 'success') {
+                toastContent.classList.add('alert-success');
+            } else if (type === 'error') {
+                toastContent.classList.add('alert-error');
+            } else if (type === 'warning') {
+                toastContent.classList.add('alert-warning');
+            } else if (type === 'info') {
+                toastContent.classList.add('alert-info');
+            }
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
