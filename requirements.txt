@@ -5,3 +5,4 @@ motor
 pydantic
 python-jose
 slowapi
+python-multipart
